@@ -2,7 +2,7 @@
 title: "Part 2 - Chi-square introduction"
 output: html_document
 ---
-
+j
 ## Overview
 
 In Part 2, we'll do an introduction to chi-square test for independence in R using lizard tail breakage data recorded at Jornada Basin Long Term Ecological Research site. 

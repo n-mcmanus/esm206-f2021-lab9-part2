@@ -1,0 +1,104 @@
+---
+title: "lab9_part2"
+author: "Nick McManus"
+date: "11/25/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(janitor)
+library(here)
+library(broom)
+```
+
+## Read in data
+```{r}
+lizards <- read_csv(here("data", "lizards.csv"))
+```
+
+Get counts of lizards by species:
+```{r}
+lizards %>% 
+  count(spp) %>% 
+  arrange(-n)
+```
+
+## Make a subset
+
+- UTST lizards
+- Sites: IBPE (enclosure grassland), RABB (rabbit mesquite site), "EAST" (east tarbush site)
+- tail condition is records (W = whole, B = broken)
+
+```{r}
+utst <- lizards %>% 
+  filter(spp == "UTST") %>% 
+  filter(site %in% c("IBPE", "RABB", "EAST")) %>% 
+  filter(tail %in% c("B", "W"))
+```
+
+## Find counts and proportions of lizards with broken or whole tails at each site
+
+```{r}
+utst %>% 
+  count(site, tail)
+```
+
+```{r}
+tail_counts <- utst %>% 
+  janitor::tabyl(site, tail)  # within janitor package
+
+tail_proportions <- tail_counts %>% 
+  janitor::adorn_percentages() %>%    # default is proportions by rows
+  janitor::adorn_pct_formatting(digits = 2) %>%   #shows as percents with specific number of decimals
+  janitor::adorn_ns()  # shows counts in ()
+```
+
+## Convert to a contingency table
+
+Use   `column_to_rowname()`. 
+
+```{r}
+lizard_ct <- tail_counts %>% 
+  column_to_rownames(var = "site")
+```
+
+
+## Chi-square
+
+Are proportions of lizards that have broken or whole tails so different, we have enough evidence to reject the null hypothesis?
+
+```{r}
+lizard_x2 <- chisq.test(lizard_ct)
+lizard_x2
+
+lizard_tidy <- broom::tidy(lizard_x2)  # puts in tidyformat to make it easier to reference in in-line coding
+```
+
+There is a significant association (i.e. non-independence) between site and lizard tail breakage ($\chi$^2^(`r lizard_tidy$parameter`) = `r lizard_tidy$statistic`, *p* = `r lizard_tidy$p.value`).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
